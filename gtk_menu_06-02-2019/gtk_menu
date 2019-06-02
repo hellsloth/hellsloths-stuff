@@ -1,0 +1,36 @@
+#!/bin/bash
+
+rm applist && touch applist && chmod +rw applist
+ls -D1 /usr/share/applications > applist
+./reformat
+
+positioning=`xdotool getmouselocation | sed 's/x:\([0-9]\+\)[ \t]y:\([0-9]\+\)[ \t].*/400x600\+\1+\2/'`
+
+GTKDIALOG=gtkdialog
+export MAIN_DIALOG='
+<window title="gtk_menu" icon-name="gtk-about"
+	resizable="false" width-request="385" height-request="500">
+
+<vbox width-request="350" height-request="550">
+	<list tag_attr="value" auto-refresh="true">
+		<sensitive>enable</sensitive>
+		<variable export="true">x</variable>
+		<input file>applist</input>
+			<action>echo $x | bash $y &>/dev/null</action>
+			<action>EXIT:exit</action>
+	</list>
+
+	
+		<button width-request="50">
+			<label> Exit </label>
+			<action>EXIT:exit</action>
+		</button>
+	
+</vbox>
+
+</window>
+'
+case $1 in
+-d | --dump) echo "$MAIN_DIALOG";;
+*) $GTKDIALOG --program=MAIN_DIALOG --geometry=$positioning;;
+esac
